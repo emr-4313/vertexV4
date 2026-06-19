@@ -151,7 +151,6 @@ namespace Pure
                             {
                                 var percentage = (double)totalRead / totalBytes;
                                 var currentProgress = startProgress + (percentage * (endProgress - startProgress));
-                                UpdateProgressBars(currentProgress, StatusText.Text);
                             }
                         }
 
