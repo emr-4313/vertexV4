@@ -1,0 +1,15 @@
+{
+  "themeName": "Cyberpunk",
+  "htmlThemeName": "cyberpunk",
+  "colors": {
+    "primaryBg": "#FF2a2a3a",
+    "secondaryBg": "#FF1f1f2d",
+    "tertiaryBg": "#FF151520",
+    "primaryFg": "#FF00ffff",
+    "secondaryFg": "#FF7575a3",
+    "accent": "#FFf7ff00",
+    "border": "#FF7575a3",
+    "hover": "#FF3d3d52",
+    "pressed": "#FF575766"
+  }
+}

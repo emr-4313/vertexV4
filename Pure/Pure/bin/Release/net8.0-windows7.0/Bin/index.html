@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Pure Monaco Editor</title>
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap');
+
+        :root {
+            --bg-color: #2d2d2d;
+            --text-color: #fefefe;
+            --accent-color: #abe1f3;
+            --hover-color: #3A3A3A;
+            --border-color: #444444;
+            --secondary-bg: #252526;
+            --secondary-text: #767676;
+            --pressed-color: #4A4A4A;
+        }
+
+        html.theme-light {
+            --bg-color: #F5F5F5;
+            --text-color: #000000;
+            --accent-color: #0066CC;
+            --hover-color: #E0E0E0;
+            --border-color: #CCCCCC;
+            --secondary-bg: #FFFFFF;
+            --secondary-text: #666666;
+            --pressed-color: #D0D0D0;
+        }
+
+        html.theme-blue {
+            --bg-color: #1a2f4a;
+            --text-color: #E6F3FF;
+            --accent-color: #66B2FF;
+            --hover-color: #2a4a6f;
+            --border-color: #4a7db8;
+            --secondary-bg: #1e3a5f;
+            --secondary-text: #5a8fb8;
+            --pressed-color: #3a5a7f;
+        }
+
+        html.theme-green {
+            --bg-color: #153f26;
+            --text-color: #E6FFE6;
+            --accent-color: #66FF66;
+            --hover-color: #2a5a3a;
+            --border-color: #4ab84a;
+            --secondary-bg: #1a4a2e;
+            --secondary-text: #5ab85a;
+            --pressed-color: #3a6a4a;
+        }
+
+        html.theme-purple {
+            --bg-color: #3f153f;
+            --text-color: #FFE6FF;
+            --accent-color: #BB66FF;
+            --hover-color: #5a2a5a;
+            --border-color: #b84ab8;
+            --secondary-bg: #4a1a4a;
+            --secondary-text: #b85ab8;
+            --pressed-color: #6a3a6a;
+        }
+
+        html.theme-red {
+            --bg-color: #3f1515;
+            --text-color: #FFE6E6;
+            --accent-color: #FF6666;
+            --hover-color: #5a2a2a;
+            --border-color: #b84a4a;
+            --secondary-bg: #4a1a1a;
+            --secondary-text: #b85a5a;
+            --pressed-color: #6a3a3a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            background: var(--bg-color) !important;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Tilt Neon', Consolas, 'Courier New', monospace;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: var(--bg-color);
+        }
+
+        #tab-bar {
+            background: transparent !important;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px 0 0;
+            gap: 3px;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            transition: border-color 0.3s ease;
+        }
+
+            #tab-bar::-webkit-scrollbar {
+                height: 5px;
+                margin-bottom: 1px;
+            }
+
+            #tab-bar::-webkit-scrollbar-track {
+                background: var(--secondary-bg);
+                border-radius: 3px;
+            }
+
+            #tab-bar::-webkit-scrollbar-thumb {
+                background: var(--secondary-text);
+                border-radius: 3px;
+                min-width: 24px;
+            }
+
+        .tab {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px 0 12px;
+            color: var(--secondary-text);
+            cursor: pointer;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            margin-right: 2px;
+            min-width: 80px;
+            max-width: 160px;
+            user-select: none;
+            font-size: 14px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease-out, background-color 0.2s ease, color 0.2s ease;
+            font-family: 'Tilt Neon', Consolas, 'Courier New', monospace;
+            will-change: transform, opacity;
+        }
+
+            .tab:first-child {
+                margin-left: 10px;
+            }
+
+            .tab.active {
+                background: var(--hover-color);
+                color: var(--text-color);
+                z-index: 1;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            .tab:hover {
+                background-color: var(--hover-color);
+                color: var(--text-color);
+            }
+
+        .tab-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tab-close {
+            opacity: 0.125;
+            margin-left: 8px;
+            margin-bottom: 2px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            color: var(--secondary-text);
+            font-size: 14px;
+            position: relative;
+            flex-shrink: 0;
+            will-change: transform, opacity;
+        }
+
+        .tab:hover .tab-close {
+            opacity: 1;
+        }
+
+        .tab-close:hover {
+            color: var(--text-color);
+        }
+
+        .tab-close::before {
+            content: "×";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            line-height: 0;
+        }
+
+        #new-tab-btn {
+            background: transparent;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-text);
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 20px;
+            border-radius: 4px;
+            border: none;
+            margin-bottom: 2px;
+            font-family: 'Tilt Neon', Consolas, 'Courier New', monospace;
+        }
+
+            #new-tab-btn:hover {
+                color: var(--text-color);
+            }
+
+        .context-menu {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            min-width: 120px;
+            animation: fadeIn 0.15s ease-out forwards;
+        }
+
+        .menu-item {
+            padding: 8px 12px;
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Tilt Neon', Consolas, 'Courier New', monospace;
+            transition: all 0.2s ease;
+        }
+
+            .menu-item:hover {
+                background: var(--hover-color);
+                color: var(--text-color);
+            }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes tabSlideRight {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .tab-fade-out {
+            animation: fadeOut 0.15s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .tab-slide-right {
+            animation: tabSlideRight 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .tab-enter-animate {
+            animation: tabEnter 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes tabEnter {
+            0% {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #container {
+            width: 100%;
+            height: calc(100vh - 40px);
+            background: transparent !important; 
+        }
+
+        .monaco-editor {
+            background: var(--bg-color);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+        }
+
+        .toast {
+            padding: 12px 24px 12px 40px;
+            margin: 8px;
+            border-radius: 4px;
+            color: white;
+            font-family: 'Tilt Neon', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateX(50px);
+            filter: blur(8px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+        }
+
+            .toast::before {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 20px;
+                height: 20px;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
+
+            .toast.success::before {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+            }
+
+            .toast.error::before {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z'/%3E%3C/svg%3E");
+            }
+
+            .toast.success {
+                background-color: rgba(34, 197, 94, 0.9);
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            }
+
+            .toast.error {
+                background-color: rgba(239, 68, 68, 0.9);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+            }
+
+            .toast.show {
+                opacity: 1;
+                transform: translateX(0);
+                filter: blur(0);
+            }
+
+            .toast.hide {
+                opacity: 0;
+                transform: translateX(50px);
+                filter: blur(8px);
+            }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <div class="toast-container"></div>
+        <div id="tab-bar">
+            <div id="new-tab-btn">+</div>
+        </div>
+        <div id="container" style="width: 100%; height: calc(100vh - 40px);"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
+    <script type="text/javascript">
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' } });
+
+        let editor, activeTab = null, tabs = [], tabCount = 0, scriptCounter = 1;
+        let saveTimeout = null;
+
+        function updateMonacoTheme() {
+            if (typeof monaco === 'undefined' || typeof monaco.editor === 'undefined') return;
+
+            const computedStyle = getComputedStyle(document.documentElement);
+            const bgColor = computedStyle.getPropertyValue('--bg-color').trim();
+            const textColor = computedStyle.getPropertyValue('--text-color').trim();
+            const secondaryText = computedStyle.getPropertyValue('--secondary-text').trim();
+            const secondaryBg = computedStyle.getPropertyValue('--secondary-bg').trim();
+            const borderColor = computedStyle.getPropertyValue('--border-color').trim();
+            const hoverColor = computedStyle.getPropertyValue('--hover-color').trim();
+            const accentColor = computedStyle.getPropertyValue('--accent-color').trim();
+            const pressedColor = computedStyle.getPropertyValue('--pressed-color').trim();
+            
+            monaco.editor.defineTheme('CustomTheme', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: '', foreground: textColor.substring(1) },
+                    { token: 'keyword', foreground: '#569cd6', fontStyle: 'bold' },
+                    { token: 'string', foreground: accentColor.substring(1) },
+                    { token: 'number', foreground: '#b5cea8' },
+                    { token: 'function', foreground: '#dcdcaa' },
+                    { token: 'support.function', foreground: '#dcdcaa' },
+                    { token: 'variable', foreground: textColor.substring(1) },
+                    { token: 'operator', foreground: textColor.substring(1) },
+                    { token: 'delimiter', foreground: textColor.substring(1) },
+                    { token: 'type', foreground: textColor.substring(1) },
+                    { token: 'constant', foreground: '#b5cea8' },
+                    { token: 'identifier', foreground: textColor.substring(1) },
+                    { token: 'entity.name.function', foreground: '#dcdcaa' },
+                    { token: 'punctuation', foreground: textColor.substring(1) },
+                    { token: 'library', foreground: '#4ec9b0' },
+                    { token: 'constant.language', foreground: '#d8a0df' }
+                ],
+                colors: {
+                    'editor.background': bgColor, 
+                    'editor.foreground': textColor,
+                    'editorLineNumber.foreground': secondaryText,
+                    'editorLineNumber.activeForeground': textColor,
+                    'editorIndentGuide.background': hoverColor,
+                    'editorIndentGuide.activeBackground': accentColor,
+                    'editorSuggestWidget.background': secondaryBg,
+                    'editorSuggestWidget.border': borderColor,
+                    'editorSuggestWidget.foreground': textColor,
+                    'editorSuggestWidget.selectedBackground': hoverColor,
+                    'editorSuggestWidget.highlightForeground': accentColor,
+                    'editor.selectionBackground': '#264f78',
+                    'editor.selectionHighlightBackground': pressedColor,
+                    'scrollbarSlider.background': secondaryBg,
+                    'scrollbarSlider.hoverBackground': hoverColor,
+                    'scrollbarSlider.activeBackground': pressedColor,
+                    'editorCursor.foreground': accentColor
+                }
+            });
+
+            if (editor) {
+                monaco.editor.setTheme('CustomTheme');
+            }
+        }
+
+function applyTheme(themeData) {
+            console.log('Applying theme data:', themeData);
+            const html = document.documentElement;
+
+            html.className = '';
+            html.style.cssText = '';
+            if (typeof themeData === 'string') {
+                if (themeData !== 'default') {
+                    html.classList.add(`theme-${themeData}`);
+                }
+            }
+            else if (typeof themeData === 'object' && themeData.type === 'custom' && themeData.colors) {
+                for (const [key, value] of Object.entries(themeData.colors)) {
+                    html.style.setProperty(key, value);
+                }
+            }
+            
+            updateMonacoTheme();
+        }
+
+        window.applyTheme = applyTheme;
+
+        function showToast(message, type) {
+            const container = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            toast.offsetHeight;
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => container.removeChild(toast), 400);
+            }, 3000);
+        }
+
+        class Tab {
+            constructor(content = `print("Pure on top!")`, name = `Script ${scriptCounter++}`, id = `tab-${Date.now()}`) {
+                this.id = id;
+                this.name = name;
+                this.content = content;
+                tabCount++;
+                this.number = tabCount;
+                this.element = this.createTabElement();
+            }
+
+            createTabElement() {
+                const tabElement = document.createElement('div');
+                tabElement.className = 'tab tab-enter-animate tab-slide-right';
+                tabElement.innerHTML = `<span class="tab-name">${this.name}</span><span class="tab-close"></span>`;
+                setTimeout(() => {
+                    tabElement.classList.remove('tab-enter-animate', 'tab-slide-right');
+                }, 300);
+
+                const attachEventListeners = () => {
+                    const nameElement = tabElement.querySelector('.tab-name');
+                    const closeElement = tabElement.querySelector('.tab-close');
+                    tabElement.removeEventListener('click', this.tabClickHandler);
+                    tabElement.removeEventListener('contextmenu', this.contextMenuHandler);
+                    nameElement.removeEventListener('dblclick', this.renameHandler);
+                    closeElement.removeEventListener('click', this.closeHandler);
+
+                    this.tabClickHandler = (e) => {
+                        if (!e.target.classList.contains('tab-close')) {
+                            activateTab(this);
+                        }
+                    };
+                    this.contextMenuHandler = (event) => {
+                        event.preventDefault();
+                        document.querySelectorAll('.context-menu').forEach(menu => menu.remove());
+                        const contextMenu = document.createElement('div');
+                        contextMenu.className = 'context-menu';
+                        contextMenu.innerHTML = `
+                                    <div class="menu-item rename-item">Rename</div>
+                                    <div class="menu-item close-item">Close</div>
+                                `;
+                        contextMenu.style.position = 'fixed';
+                        contextMenu.style.left = `${event.clientX}px`;
+                        contextMenu.style.top = `${event.clientY}px`;
+                        document.body.appendChild(contextMenu);
+
+                        contextMenu.querySelector('.rename-item').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            startRenameProcess();
+                            contextMenu.remove();
+                        }, { once: true });
+
+                        contextMenu.querySelector('.close-item').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (tabCount > 1) {
+                                closeTab(this);
+                                tabCount--;
+                            }
+                            contextMenu.remove();
+                        }, { once: true });
+
+                        document.addEventListener('click', () => contextMenu.remove(), { once: true });
+                    };
+                    this.renameHandler = () => startRenameProcess();
+                    this.closeHandler = (event) => {
+                        event.stopPropagation();
+                        if (tabCount > 1) {
+                            closeTab(this);
+                            tabCount--;
+                        }
+                    };
+
+                    nameElement.addEventListener('dblclick', this.renameHandler, { once: false });
+                    tabElement.addEventListener('click', this.tabClickHandler, { once: false });
+                    closeElement.addEventListener('click', this.closeHandler, { once: false });
+                    tabElement.addEventListener('contextmenu', this.contextMenuHandler, { once: false });
+                };
+
+                let renameTimeout = null;
+                const startRenameProcess = () => {
+                    if (renameTimeout) clearTimeout(renameTimeout);
+                    renameTimeout = setTimeout(() => {
+                        const nameElement = tabElement.querySelector('.tab-name');
+                        if (nameElement.tagName === 'INPUT') return;
+                        const inputElement = document.createElement('input');
+                        inputElement.value = this.name;
+                        inputElement.style.cssText = 'width:80px;background:transparent;border:none;color:var(--text-color);outline:none;font-family:"Tilt Neon",Consolas,"Courier New",monospace;font-size:14.5px;padding:0;box-sizing:border-box;';
+                        nameElement.replaceWith(inputElement);
+                        inputElement.focus();
+                        inputElement.select();
+
+                        const finishRenaming = () => {
+                            this.name = inputElement.value || 'Untitled';
+                            const newNameElement = document.createElement('span');
+                            newNameElement.className = 'tab-name';
+                            newNameElement.textContent = this.name;
+                            inputElement.replaceWith(newNameElement);
+                            tabElement.style.cssText = '';
+                            attachEventListeners();
+                            saveTabsToLocalStorage();
+                        };
+
+                        inputElement.addEventListener('blur', finishRenaming, { once: true });
+                        inputElement.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter') finishRenaming();
+                            if (event.key === 'Escape') {
+                                inputElement.value = this.name;
+                                finishRenaming();
+                            }
+                        }, { once: true });
+                    }, 200);
+                };
+
+                attachEventListeners();
+                return tabElement;
+            }
+        }
+
+        function createNewTab() {
+            const tab = new Tab();
+            tabs.push(tab);
+            const tabBar = document.getElementById('tab-bar');
+            const newTabBtn = document.getElementById('new-tab-btn');
+            tabBar.insertBefore(tab.element, newTabBtn);
+            activateTab(tab);
+            saveTabsToLocalStorage();
+            tabBar.scrollLeft = tabBar.scrollWidth;
+        }
+
+        function closeTab(tab) {
+            if (tabs.length <= 1) {
+                showToast('Cannot close the last tab!', 'error');
+                return;
+            }
+            tab.element.classList.add('tab-fade-out');
+            setTimeout(() => {
+                if (!tabs.includes(tab)) return;
+                const tabIndex = tabs.indexOf(tab);
+                if (tabIndex > -1) {
+                    tabs.splice(tabIndex, 1);
+                    tab.element.remove();
+                    if (tab === activeTab) {
+                        activeTab = null;
+                        if (tabs.length > 0) {
+                            const nextTab = tabs[Math.max(0, tabIndex - 1)];
+                            activateTab(nextTab);
+                        } else {
+                            editor.setValue('');
+                        }
+                    }
+                    saveTabsToLocalStorage();
+                }
+            }, 150);
+        }
+
+        let transitionTimeout = null;
+
+        function activateTab(tab) {
+            if (activeTab === tab) return;
+            const editorContainer = document.getElementById('container');
+            if (activeTab) {
+                activeTab.element.classList.remove('active');
+                activeTab.content = editor.getValue();
+                editorContainer.classList.add('tab-transition-out');
+            }
+            if (transitionTimeout) clearTimeout(transitionTimeout);
+            transitionTimeout = setTimeout(() => {
+                editorContainer.classList.remove('tab-transition-out');
+                activeTab = tab;
+                tab.element.classList.add('active');
+                editor.setValue(tab.content);
+                editorContainer.classList.add('tab-transition-in');
+                setTimeout(() => editorContainer.classList.remove('tab-transition-in'), 0);
+            }, 100);
+        }
+
+        function saveTabsToLocalStorage() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const tabData = tabs.map(tab => ({
+                    id: tab.id,
+                    name: tab.name,
+                    content: tab.content
+                }));
+                localStorage.setItem('editorTabs', JSON.stringify(tabData));
+                localStorage.setItem('scriptCounter', scriptCounter.toString());
+            }, 200);
+        }
+
+        function loadTabsFromLocalStorage() {
+            try {
+                const savedTabs = localStorage.getItem('editorTabs');
+                const savedScriptCounter = localStorage.getItem('scriptCounter');
+                if (savedScriptCounter) {
+                    scriptCounter = parseInt(savedScriptCounter) || 1;
+                }
+                if (savedTabs) {
+                    const tabData = JSON.parse(savedTabs);
+                    if (Array.isArray(tabData) && tabData.length > 0) {
+                        tabData.forEach(tab => {
+                            if (tab.id && tab.name && tab.content) {
+                                const newTab = new Tab(tab.content, tab.name, tab.id);
+                                tabs.push(newTab);
+                                document.getElementById('tab-bar').insertBefore(newTab.element, document.getElementById('new-tab-btn'));
+                            }
+                        });
+                        if (tabs.length > 0) {
+                            activateTab(tabs[0]);
+                            return;
+                        }
+                    }
+                }
+                createNewTab();
+            } catch (e) {
+                console.error('Failed to load tabs from localStorage:', e);
+                createNewTab();
+            }
+        }
+
+        function handleMessage(data) {
+             if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    console.error('Failed to parse message:', e);
+                    return;
+                }
+            }
+            if (data.type === "themeChange" && typeof data.theme === "string") {
+                applyTheme(data.theme);
+            }
+        }
+
+        function setupMessageHandlers() {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.addEventListener('message', event => handleMessage(event.data));
+            }
+            window.addEventListener('message', event => handleMessage(event.data));
+        }
+        
+        require(['vs/editor/editor.main'], function () {
+            
+            updateMonacoTheme();
+            require(['vs/basic-languages/lua/lua'], function () {
+                monaco.languages.registerCompletionItemProvider('lua', {
+                    provideCompletionItems: function (model, position) {
+                        const word = model.getWordUntilPosition(position);
+                        const prefix = word.word.toLowerCase();
+                        const suggestions = [
+                            { label: 'print', kind: monaco.languages.CompletionItemKind.Function, insertText: 'print(${1})', documentation: 'Outputs a message to the console' },
+                            { label: 'printidentity', kind: monaco.languages.CompletionItemKind.Function, insertText: 'printidentity(${1})', documentation: 'Prints identity information' },
+                            { label: 'printidentify', kind: monaco.languages.CompletionItemKind.Function, insertText: 'printidentify(${1})', documentation: 'Identifies and prints details' },
+                            { label: 'executor', kind: monaco.languages.CompletionItemKind.Function, insertText: 'executor(${1})', documentation: 'Executes a command or script' },
+                            { label: 'local', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'local ${1}', documentation: 'Declares a local variable' },
+                            { label: 'function', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'function ${1}()\n\t${2}\nend', documentation: 'Defines a function' },
+                            { label: 'if', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if ${1} then\n\t${2}\nend', documentation: 'Conditional statement' },
+                            { label: 'else', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'else\n\t${1}', documentation: 'Alternative condition' },
+                            { label: 'elseif', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'elseif ${1} then\n\t${2}', documentation: 'Additional condition' },
+                            { label: 'for', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'for ${1} = ${2}, ${3} do\n\t${4}\nend', documentation: 'Loop over a range' },
+                            { label: 'while', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'while ${1} do\n\t${2}\nend', documentation: 'Loop while condition is true' },
+                            { label: 'return', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'return ${1}', documentation: 'Returns a value' },
+                            { label: 'assert', kind: monaco.languages.CompletionItemKind.Function, insertText: 'assert(${1})', documentation: 'Asserts a condition' },
+                            { label: 'dofile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'dofile(${1})', documentation: 'Executes a file' },
+                            { label: 'getmetatable', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getmetatable(${1})', documentation: 'Gets the metatable of an object' },
+                            { label: 'pairs', kind: monaco.languages.CompletionItemKind.Function, insertText: 'pairs(${1})', documentation: 'Iterates over table key-value pairs' },
+                            { label: 'ipairs', kind: monaco.languages.CompletionItemKind.Function, insertText: 'ipairs(${1})', documentation: 'Iterates over table indices' },
+                            { label: 'tonumber', kind: monaco.languages.CompletionItemKind.Function, insertText: 'tonumber(${1})', documentation: 'Converts to a number' },
+                            { label: 'tostring', kind: monaco.languages.CompletionItemKind.Function, insertText: 'tostring(${1})', documentation: 'Converts to a string' },
+                            { label: 'type', kind: monaco.languages.CompletionItemKind.Function, insertText: 'type(${1})', documentation: 'Returns the type of a value' },
+                            { label: 'hookfunction', kind: monaco.languages.CompletionItemKind.Function, insertText: 'hookfunction(${1}, ${2})', documentation: 'Hooks a function' },
+                            { label: 'getgenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getgenv()', documentation: 'Gets global environment' },
+                            { label: 'getrenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getrenv()', documentation: 'Gets Roblox environment' },
+                            { label: 'isexecutorclosure', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isexecutorclosure(${1})', documentation: 'Checks if a function is an executor closure' },
+                            { label: 'setclipboard', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setclipboard(${1})', documentation: 'Sets clipboard content' }
+                        ].filter(s => s.label.toLowerCase().startsWith(prefix));
+                        return { suggestions };
+                    },
+                    triggerCharacters: ['.', ':', '"', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+                });
+
+                editor = monaco.editor.create(document.getElementById('container'), {
+                    value: '',
+                    language: 'lua',
+                    theme: 'CustomTheme',
+                    fontSize: 15,
+                    fontFamily: "'Tilt Neon', Consolas, 'Courier New', monospace",
+                    folding: true,
+                    dragAndDrop: true,
+                    links: true,
+                    minimap: { enabled: false },
+                    showFoldingControls: 'always',
+                    smoothScrolling: true,
+                    cursorBlinking: 'smooth',
+                    cursorSmoothCaretAnimation: 'on',
+                    foldingHighlight: true,
+                    fontLigatures: true,
+                    formatOnPaste: true,
+                    showDeprecated: true,
+                    suggest: { snippetsPreventQuickSuggestions: false },
+                    padding: { top: 5, left: 0 },
+                    lineNumbers: 'on',
+                    lineNumbersMinChars: 3,
+                    scrollBeyondLastLine: false
+                });
+
+                editor.getModel().updateOptions({ insertSpaces: false });
+                editor.onDidChangeModelContent(() => {
+                    if (activeTab) {
+                        activeTab.content = editor.getValue();
+                        saveTabsToLocalStorage();
+                    }
+                });
+
+                document.getElementById('new-tab-btn').addEventListener('click', createNewTab);
+                loadTabsFromLocalStorage();
+
+                window.onresize = function () {
+                    editor.layout();
+                };
+
+                window.GetText = function () {
+                    return editor.getValue();
+                };
+
+                window.SetText = function (x) {
+                    editor.setValue(String(x));
+                    if (activeTab) {
+                        activeTab.content = editor.getValue();
+                        saveTabsToLocalStorage();
+                    }
+                };
+            });
+
+            window.addEventListener('load', () => {
+                setupMessageHandlers();
+                setTimeout(() => showToast('Pure loaded!', 'success'), 1500);
+            });
+        });
+    </script>
+</body>
+</html>

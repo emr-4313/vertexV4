@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ApplicationIcon>Minimalist__C4Sploit__Logo_Design-removebg-preview.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="PureLogo.png" />
+    <None Remove="PureNOBG.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Minimalist__C4Sploit__Logo_Design-removebg-preview.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.100" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3405.78" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="PureNOBG.png" />
+  </ItemGroup>
+
+</Project>
